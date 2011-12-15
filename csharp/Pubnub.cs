@@ -75,13 +75,14 @@ public class PubnubTEST {
  * @package pubnub
  */
 public class Pubnub {
-    private string ORIGIN        = "pubsub.pubnub.com";
-    private int    LIMIT         = 1800;
-    private string PUBLISH_KEY   = "";
-    private string SUBSCRIBE_KEY = "";
-    private string SECRET_KEY    = "";
-    private bool   SSL           = false;
-
+    private string    ORIGIN        = "pubsub.pubnub.com";
+    private int       LIMIT         = 1800;
+    private string    PUBLISH_KEY   = "";
+    private string    SUBSCRIBE_KEY = "";
+    private string    SECRET_KEY    = "";
+    private bool      SSL           = false;
+    private IWebProxy WEB_PROXY     = null;
+	
     public delegate bool Procedure(object message);
 
     /**
@@ -93,14 +94,16 @@ public class Pubnub {
      * @param string Subscribe Key.
      * @param string Secret Key.
      * @param bool SSL Enabled.
+	 * @param IWebProxy Web Proxy.
      */
     public Pubnub(
         string publish_key,
         string subscribe_key,
         string secret_key,
-        bool ssl_on
+        bool ssl_on,
+		IWebProxy webProxy = null
     ) {
-        this.init( publish_key, subscribe_key, secret_key, ssl_on );
+        this.init( publish_key, subscribe_key, secret_key, ssl_on, webProxy );
     }
 
     /**
@@ -115,7 +118,7 @@ public class Pubnub {
         string publish_key,
         string subscribe_key
     ) {
-        this.init( publish_key, subscribe_key, "", false );
+        this.init( publish_key, subscribe_key, "", false, null );
     }
 
     /**
@@ -149,13 +152,15 @@ public class Pubnub {
         string publish_key,
         string subscribe_key,
         string secret_key,
-        bool ssl_on
+        bool ssl_on,
+		IWebProxy webProxy = null
     ) {
         this.PUBLISH_KEY   = publish_key;
         this.SUBSCRIBE_KEY = subscribe_key;
         this.SECRET_KEY    = secret_key;
         this.SSL           = ssl_on;
-
+        this.WEB_PROXY     = webProxy;
+		
         // SSL On?
         if (this.SSL) {
             this.ORIGIN = "https://" + this.ORIGIN;
@@ -340,6 +345,10 @@ public class Pubnub {
         HttpWebRequest  request   = (HttpWebRequest)
             WebRequest.Create(url.ToString());
 
+		// Set Proxy, if provided
+        if(this.WEB_PROXY != null)
+			request.Proxy = this.WEB_PROXY;
+			
         // Set Timeout
         request.Timeout          = 200000;
         request.ReadWriteTimeout = 200000;
